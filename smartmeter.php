@@ -4,7 +4,7 @@
 
 // Let's start the class
 $serial = new phpSerial;
-$Mysql_con = 0;
+//$Mysql_con = mysql_connect("nas","domotica","b-2020");
 
 // First we must specify the device. This works on both linux and windows (if
 // your linux serial device is /dev/ttyS0 for COM1, etc)
@@ -146,17 +146,26 @@ function removeEmptyLines(&$linksArray)
 
 function writeEnergyDatabase($gas_used, $kwh_used1, $kwh_used2, $kwh_provided1, $kwh_provided2, $watt_usage)
 {
-while (!$Mysql_con)
+  static $Mysql_con;
+  if (!$Mysql_con)
   {
-$Mysql_con = mysql_connect("nas","domotica","b-2020");
+      $Mysql_con = mysql_connect("nas","domotica","b-2020");
+  }
+
+  if ($Mysql_con)
+  {        
+      if (mysql_select_db("domotica", $Mysql_con))
+      {
+        if (mysql_query("INSERT INTO energy (gas_used, kwh_used1, kwh_used2, kwh_provided1, kwh_provided2, watt_usage)
+        VALUES ($gas_used, $kwh_used1, $kwh_used2, $kwh_provided1, $kwh_provided2, $watt_usage)"))
+        {
+          return 1;
+        }
       }
-      
-      mysql_select_db("domotica", $Mysql_con);
-      
-      mysql_query("INSERT INTO energy (gas_used, kwh_used1, kwh_used2, kwh_provided1, kwh_provided2, watt_usage)
-      VALUES ($gas_used, $kwh_used1, $kwh_used2, $kwh_provided1, $kwh_provided2, $watt_usage)");
-      
-mysql_close($Mysql_con);
+      mysql_close($Mysql_con);
+      $Mysql_con = 0;
+  }
+  return 0;
 }
 
 ?>  
