@@ -35,7 +35,7 @@ $start_time = time();
 $write_database_timeout = 10; // write database every 10 minutes
 $write_database_timer = time();
 
-$Water_Used = doubleval(file_get_contents("/usr/domotica/watermeter/waterreading"));
+$Water_Used = 0;
 $Electricity_Usage = 0;
 $Electricity_Used_1 = 0;
 $Electricity_Used_2 = 0;
@@ -84,7 +84,8 @@ echo "Opening Serial Port...\n";
               if ($line == "!") $receivedpacket = "";
               if (($line == "!") && ($packetcomplete))
               {
-                $Water_Used = doubleval(file_get_contents("/usr/domotica/watermeter/waterreading"));
+                $Water_Used_New = file_get_contents("/usr/domotica/watermeter/waterreading");
+                if ($Water_Used_New !== FALSE) $Water_Used = doubleval($Water_Used_New);
                 echo "Received Data (".date('Y/m/d H:i:s')."): gas_used=".$Gas_Used.", kwh_used1=".$Electricity_Used_1.", kwh_used2=".$Electricity_Used_2.", kwh_provided1=".$Electricity_Provided_1.", kwh_provided2=".$Electricity_Provided_2.", watt_usage=".$Electricity_Usage." water_used=".$Water_Used."\n";
                 if ($write_database_timer < time() )
                 {
